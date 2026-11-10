@@ -1,0 +1,76 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+struct Student
+{
+    string id;
+    string name;
+    string age;
+    string gender;
+    string phone;
+};
+
+int main()
+{
+    ifstream input;
+    Student stud[100];
+
+    input.open("students.txt");
+
+    if(input.fail())
+    {
+        cout << "Opening failed." << endl;
+        return 0;
+    }
+
+    int i = 0;
+
+    while(i < 100)
+    {
+    
+        if(!getline(input, stud[i].id, ','))
+        {
+            break;
+        }
+
+
+        if(!getline(input, stud[i].name, ','))
+        {
+            break;
+        }
+
+
+        if(!getline(input, stud[i].age, ','))
+        {
+            break;
+        }
+
+        if(!getline(input, stud[i].gender, ','))
+        {
+            break;
+        }
+
+        if(!getline(input, stud[i].phone))
+        {
+            break;
+        }
+
+        i++;
+    }
+
+    input.close();
+
+    for(int j = 0; j <=i; j++)
+    {
+        cout << "Student ID: " << stud[j].id << endl;
+        cout << "Name: " << stud[j].name << endl;
+        cout << "Age: " << stud[j].age << endl;
+        cout << "Gender: " << stud[j].gender << endl;
+        cout << "Phone: " << stud[j].phone << endl;
+        
+    }
+
+    return 0;
+}
