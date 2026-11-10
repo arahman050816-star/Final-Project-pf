@@ -17,7 +17,9 @@ int main()
 	Student stud[100];
 	input.open("students.txt");
 	if(input.fail())
-	cout<<"openning is failed."<<endl;
+	{
+		cout<<"openning is failed."<<endl;
+	}
 	for(int i=0;i<10000;i++)
 	{
 	
