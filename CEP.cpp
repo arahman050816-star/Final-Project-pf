@@ -42,7 +42,7 @@ int main()
     
     Student stud[100];
     
-    Teacher teach[10];
+    Teacher teach[100];
     
     Attendance attend[100];
     
@@ -53,7 +53,7 @@ int main()
     if(input.fail())
     {
         cout << "Opening failed." << endl;
-        
+        return 0;
     }
 
 
