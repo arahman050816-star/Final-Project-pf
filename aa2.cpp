@@ -38,10 +38,208 @@ struct MarkRecord
     int marks;
 };
 
-
+bool adminLogin();
 Student* findStudentById(Student*, int, int);
 void addStudent(Student *&stud, int &studentCount);
 void updateStudent(Student *stud, int studentCount);
+void deleteStudent(Student *&stud, int &studentCount);
+void removeRecordsOfStudent(int studentId);
+void saveStudents(Student *stud, int studentCount);
+void addTeacher(Teacher *&teach, int &teacherCount);
+void updateTeacher(Teacher *teach, int teacherCount);
+void deleteTeacher(Teacher *&teach, int &teacherCount);
+void viewTeachers(Teacher *teach, int teacherCount);
+Teacher* findTeacherById(Teacher *teach, int teacherCount, int id);
+// ADMIN LOGIN
+
+bool adminLogin()
+{
+    char password[20];
+
+    char correctPassword[] = "aa1234";
+
+    int attempts = 3;
+
+    while(attempts > 0)
+    {
+        cout << "\nEnter Admin Password: ";
+        cin >> password;
+
+        if(strcmp(password, correctPassword) == 0)
+        {
+            cout << "\nLogin Successful!" << endl;
+            return true;
+        }
+        else
+        {
+            attempts--;
+
+            cout << "\nIncorrect Password!" << endl;
+            cout << "Remaining Attempts: " << attempts << endl;
+        }
+    }
+
+    cout << "\nThree attempts completed!" << endl;
+    cout << "Access Denied!" << endl;
+
+    return false;
+}
+
+// REMOVE STUDENT ATTENDANCE AND MARKS
+
+void removeRecordsOfStudent(int studentId)
+{
+    // Remove Attendance Records
+
+    ifstream input("attendance.txt");
+
+    if(input)
+    {
+        ofstream output("temp.txt");
+
+        Attendance a;
+
+        while(input >> a.studentId)
+        {
+            input.ignore();
+
+            input >> a.teacherId;
+            input.ignore();
+
+            input.getline(a.date, 12, ',');
+            input.getline(a.status, 8);
+
+            if(input && a.studentId != studentId)
+            {
+                output << a.studentId << ","
+                       << a.teacherId << ","
+                       << a.date << ","
+                       << a.status << endl;
+            }
+        }
+
+        input.close();
+        output.close();
+
+        remove("attendance.txt");
+        rename("temp.txt", "attendance.txt");
+    }
+
+    // Remove Marks Records
+
+    ifstream markInput("marks.txt");
+
+    if(markInput)
+    {
+        ofstream markOutput("temp.txt");
+
+        MarkRecord m;
+
+        while(markInput >> m.studentId)
+        {
+            markInput.ignore();
+
+            markInput.getline(m.subject, 10, ',');
+            markInput.getline(m.component, 12, ',');
+
+            markInput >> m.marks;
+
+            if(markInput && m.studentId != studentId)
+            {
+                markOutput << m.studentId << ","
+                           << m.subject << ","
+                           << m.component << ","
+                           << m.marks << endl;
+            }
+        }
+
+        markInput.close();
+        markOutput.close();
+
+        remove("marks.txt");
+        rename("temp.txt", "marks.txt");
+    }
+
+    cout << "\nStudent Attendance and Marks Records Removed!" << endl;
+}
+
+// DELETE STUDENT
+
+void deleteStudent(Student *&stud, int &studentCount)
+{
+    int searchId;
+    if(studentCount == 0)
+{
+    cout << "\nNo Students Available!" << endl;
+    return;
+}
+    cout << "\nEnter Student ID to delete: ";
+    cin >> searchId;
+
+    // Find Student
+
+    Student *found = findStudentById(stud, studentCount, searchId);
+
+    if(found == NULL)
+    {
+        cout << "\nStudent Not Found!" << endl;
+        return;
+    }
+
+    cout << "\nStudent Found!" << endl;
+    cout << "ID: " << found->studentId << endl;
+    cout << "Name: " << found->name << endl;
+
+    char choice;
+
+    cout << "\nAre you sure you want to delete this student? (Y/N): ";
+    cin >> choice;
+
+    if(choice != 'Y' && choice != 'y')
+    {
+        cout << "\nDeletion Cancelled!" << endl;
+        return;
+    }
+
+    // Create New Dynamic Array
+
+    Student *newStud = new Student[studentCount - 1];
+
+    int j = 0;
+
+    // Copy all students except deleted student
+
+    for(int i = 0; i < studentCount; i++)
+    {
+        if(stud[i].studentId != searchId)
+        {
+            newStud[j] = stud[i];
+            j++;
+        }
+    }
+
+    // Delete Old Memory
+
+    delete[] stud;
+
+    // Update Pointer
+
+    stud = newStud;
+
+    // Decrease Student Count
+
+    studentCount--;
+
+    // Save Updated Student Records
+
+    saveStudents(stud, studentCount);
+
+    // Remove Attendance and Marks
+
+    removeRecordsOfStudent(searchId);
+
+    cout << "\nStudent Deleted Successfully!" << endl;
+}
 // STUDENT FILE CLEANING
 
 void cleanStudents()
@@ -700,9 +898,7 @@ void saveTeachers(Teacher *teach, int teacherCount)
 
     output.close();
 }
-
-
-
+//stud id
 Student* findStudentById(Student *stud, int studentCount, int searchId)
 {
     for(int i = 0; i < studentCount; i++)
@@ -716,10 +912,323 @@ Student* findStudentById(Student *stud, int studentCount, int searchId)
     return NULL;
 }
 
+// ADD TEACHER
+
+void addTeacher(Teacher *&teach, int &teacherCount)
+{
+    Teacher t;
+
+    // Get Teacher ID
+    cout << "\nEnter Teacher ID: ";
+    cin >> t.teacherId;
+
+    // Check positive ID
+    while(t.teacherId <= 0)
+    {
+        cout << "Invalid ID. Enter a positive ID: ";
+        cin >> t.teacherId;
+    }
+
+    // Check duplicate ID
+    for(int i = 0; i < teacherCount; i++)
+    {
+        while(teach[i].teacherId == t.teacherId)
+        {
+            cout << "This ID already exists. Enter another ID: ";
+            cin >> t.teacherId;
+
+            i = -1;
+        }
+    }
+
+    cin.ignore(1000, '\n');
+
+    // Get Teacher Name
+    cout << "Enter Teacher Name: ";
+    cin.getline(t.name, 40);
+
+    while(strlen(t.name) == 0)
+    {
+        cout << "Name cannot be empty. Enter again: ";
+        cin.getline(t.name, 40);
+    }
+
+    // Get Department
+    cout << "Enter Department: ";
+    cin.getline(t.department, 30);
+
+    while(strlen(t.department) == 0)
+    {
+        cout << "Department cannot be empty. Enter again: ";
+        cin.getline(t.department, 30);
+    }
+
+    // Get Experience
+    cout << "Enter Experience (0-45 years): ";
+    cin >> t.experience;
+
+    while(t.experience < 0 || t.experience > 45)
+    {
+        cout << "Experience must be between 0 and 45. Enter again: ";
+        cin >> t.experience;
+    }
+
+    cin.ignore(1000, '\n');
+
+    // Get Course
+    cout << "Enter Course: ";
+    cin.getline(t.course, 30);
+
+    while(strlen(t.course) == 0)
+    {
+        cout << "Course cannot be empty. Enter again: ";
+        cin.getline(t.course, 30);
+    }
+
+    // Create new dynamic array
+    Teacher *newTeach = new Teacher[teacherCount + 1];
+
+    // Copy existing teachers
+    for(int i = 0; i < teacherCount; i++)
+    {
+        newTeach[i] = teach[i];
+    }
+
+    // Add new teacher
+    newTeach[teacherCount] = t;
+
+    // Delete old memory
+    delete[] teach;
+
+    // Update pointer
+    teach = newTeach;
+
+    // Increase teacher count
+    teacherCount++;
+
+    // Save teachers into file
+    saveTeachers(teach, teacherCount);
+
+    cout << "\nTeacher added successfully!" << endl;
+}
+
+// UPDATE TEACHER
+
+void updateTeacher(Teacher *teach, int teacherCount)
+{
+    if(teacherCount == 0)
+    {
+        cout << "\nNo Teachers Available!" << endl;
+        return;
+    }
+
+    int id;
+    int found = -1;
+
+    cout << "\nEnter Teacher ID to Update: ";
+    cin >> id;
+
+    // Search Teacher
+    for(int i = 0; i < teacherCount; i++)
+    {
+        if(teach[i].teacherId == id)
+        {
+            found = i;
+            break;
+        }
+    }
+
+    if(found == -1)
+    {
+        cout << "\nTeacher Not Found!" << endl;
+        return;
+    }
+
+    cin.ignore(1000, '\n');
+
+    // Update Name
+    cout << "\nEnter New Name: ";
+    cin.getline(teach[found].name, 40);
+
+    while(strlen(teach[found].name) == 0)
+    {
+        cout << "Name cannot be empty. Enter again: ";
+        cin.getline(teach[found].name, 40);
+    }
+
+    // Update Department
+    cout << "Enter New Department: ";
+    cin.getline(teach[found].department, 30);
+
+    while(strlen(teach[found].department) == 0)
+    {
+        cout << "Department cannot be empty. Enter again: ";
+        cin.getline(teach[found].department, 30);
+    }
+
+    // Update Experience
+    cout << "Enter New Experience (0-45): ";
+    cin >> teach[found].experience;
+
+    while(teach[found].experience < 0 ||
+          teach[found].experience > 45)
+    {
+        cout << "Invalid Experience. Enter again: ";
+        cin >> teach[found].experience;
+    }
+
+    cin.ignore(1000, '\n');
+
+    // Update Course
+    cout << "Enter New Course: ";
+    cin.getline(teach[found].course, 30);
+
+    while(strlen(teach[found].course) == 0)
+    {
+        cout << "Course cannot be empty. Enter again: ";
+        cin.getline(teach[found].course, 30);
+    }
+
+    // Save Updated Data
+    saveTeachers(teach, teacherCount);
+
+    cout << "\nTeacher Updated Successfully!" << endl;
+}
+// DELETE TEACHER
+
+void deleteTeacher(Teacher *&teach, int &teacherCount)
+{
+    if(teacherCount == 0)
+    {
+        cout << "\nNo Teachers Available!" << endl;
+        return;
+    }
+
+    int id;
+    int found = -1;
+
+    cout << "\nEnter Teacher ID to Delete: ";
+    cin >> id;
+
+    // Search Teacher
+    for(int i = 0; i < teacherCount; i++)
+    {
+        if(teach[i].teacherId == id)
+        {
+            found = i;
+            break;
+        }
+    }
+
+    if(found == -1)
+    {
+        cout << "\nTeacher Not Found!" << endl;
+        return;
+    }
+
+    char choice;
+
+    cout << "\nAre you sure you want to delete this teacher? (Y/N): ";
+    cin >> choice;
+
+    if(choice == 'Y' || choice == 'y')
+    {
+        // Create smaller array
+        Teacher *newTeach = NULL;
+
+        if(teacherCount > 1)
+        {
+            newTeach = new Teacher[teacherCount - 1];
+
+            int j = 0;
+
+            // Copy all teachers except deleted teacher
+            for(int i = 0; i < teacherCount; i++)
+            {
+                if(i != found)
+                {
+                    newTeach[j] = teach[i];
+                    j++;
+                }
+            }
+        }
+
+        // Delete old array
+        delete[] teach;
+
+        // Update pointer
+        teach = newTeach;
+
+        // Decrease count
+        teacherCount--;
+
+        // Save updated data
+        saveTeachers(teach, teacherCount);
+
+        cout << "\nTeacher Deleted Successfully!" << endl;
+    }
+    else
+    {
+        cout << "\nDeletion Cancelled!" << endl;
+    }
+}
+// VIEW TEACHERS
+
+void viewTeachers(Teacher *teach, int teacherCount)
+{
+    if(teacherCount == 0)
+    {
+        cout << "\nNo Teachers Available!" << endl;
+        return;
+    }
+
+    cout << "\n========== TEACHER DETAILS ==========" << endl;
+
+    for(int i = 0; i < teacherCount; i++)
+    {
+        cout << "\nTeacher " << i + 1 << endl;
+
+        cout << "Teacher ID: " << teach[i].teacherId << endl;
+
+        cout << "Name: " << teach[i].name << endl;
+
+        cout << "Department: " << teach[i].department << endl;
+
+        cout << "Experience: " << teach[i].experience << " years" << endl;
+
+        cout << "Course: " << teach[i].course << endl;
+
+        cout << "------------------------------------" << endl;
+    }
+}
+
+// SEARCH TEACHER
+
+Teacher* findTeacherById(Teacher *teach, int teacherCount, int id)
+{
+    for(int i = 0; i < teacherCount; i++)
+    {
+        if(teach[i].teacherId == id)
+        {
+            return &teach[i];
+        }
+    }
+
+    return NULL;
+}
+
+
 // MAIN FUNCTION
 
 int main()
 {
+	
+	    // ADMIN LOGIN
+    if(adminLogin() == false)
+    {
+        return 0;
+    }
+
     // Clean all files
 
     cleanStudents();
@@ -735,15 +1244,44 @@ int main()
 
     // Load students and teachers
 
-    Student *stud = loadStudents(studentCount);
+   Student *stud = loadStudents(studentCount);
 
-    Teacher *teach = loadTeachers(teacherCount);
+Teacher *teach = loadTeachers(teacherCount);
 
-
- updateStudent(stud, studentCount);
+updateStudent(stud, studentCount);
 
 addStudent(stud, studentCount);
 
+deleteStudent(stud, studentCount);
+addTeacher(teach, teacherCount);
+updateTeacher(teach, teacherCount);
+deleteTeacher(teach, teacherCount);
+viewTeachers(teach, teacherCount);
+
+
+// SEARCH TEACHER
+
+int id;
+
+cout << "\nEnter Teacher ID to Search: ";
+cin >> id;
+
+Teacher *result = findTeacherById(teach, teacherCount, id);
+
+if(result != NULL)
+{
+    cout << "\nTeacher Found!" << endl;
+
+    cout << "Teacher ID: " << result->teacherId << endl;
+    cout << "Name: " << result->name << endl;
+    cout << "Department: " << result->department << endl;
+    cout << "Experience: " << result->experience << " years" << endl;
+    cout << "Course: " << result->course << endl;
+}
+else
+{
+    cout << "\nTeacher Not Found!" << endl;
+}
     // Attendance and Marks memory
 
     Attendance *attend = new Attendance[100]();
