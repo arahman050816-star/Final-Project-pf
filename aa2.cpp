@@ -1222,15 +1222,13 @@ Teacher* findTeacherById(Teacher *teach, int teacherCount, int id)
 
 int main()
 {
-	
-	    // ADMIN LOGIN
+    // ADMIN LOGIN
     if(adminLogin() == false)
     {
         return 0;
     }
 
-    // Clean all files
-
+    // CLEAN FILES
     cleanStudents();
     cleanTeachers();
     cleanAttendance();
@@ -1238,189 +1236,182 @@ int main()
 
     int studentCount = 0;
     int teacherCount = 0;
-    int attendanceCount = 0;
-    int marksCount = 0;
 
+    // LOAD DATA
+    Student *stud = loadStudents(studentCount);
+    Teacher *teach = loadTeachers(teacherCount);
 
-    // Load students and teachers
+    int choice;
 
-   Student *stud = loadStudents(studentCount);
-
-Teacher *teach = loadTeachers(teacherCount);
-
-updateStudent(stud, studentCount);
-
-addStudent(stud, studentCount);
-
-deleteStudent(stud, studentCount);
-addTeacher(teach, teacherCount);
-updateTeacher(teach, teacherCount);
-deleteTeacher(teach, teacherCount);
-viewTeachers(teach, teacherCount);
-
-
-// SEARCH TEACHER
-
-int id;
-
-cout << "\nEnter Teacher ID to Search: ";
-cin >> id;
-
-Teacher *result = findTeacherById(teach, teacherCount, id);
-
-if(result != NULL)
-{
-    cout << "\nTeacher Found!" << endl;
-
-    cout << "Teacher ID: " << result->teacherId << endl;
-    cout << "Name: " << result->name << endl;
-    cout << "Department: " << result->department << endl;
-    cout << "Experience: " << result->experience << " years" << endl;
-    cout << "Course: " << result->course << endl;
-}
-else
-{
-    cout << "\nTeacher Not Found!" << endl;
-}
-    // Attendance and Marks memory
-
-    Attendance *attend = new Attendance[100]();
-
-    MarkRecord *marks = new MarkRecord[100]();
-
-
-    // ATTENDANCE FILE READING
-
-    ifstream input("attendance.txt");
-
-    if(input)
+    do
     {
-        for(int i = 0; i < 100 && input >> attend[i].studentId; i++)
+        cout << "\n====================================";
+        cout << "\n   UNIVERSITY MANAGEMENT SYSTEM";
+        cout << "\n====================================";
+        cout << "\n1. Student Management";
+        cout << "\n2. Teacher Management";
+        cout << "\n3. Search Student";
+        cout << "\n4. Search Teacher";
+        cout << "\n5. Exit";
+        cout << "\n====================================";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+
+        if(cin.fail())
         {
-            input.ignore();
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "\nInvalid input!";
+            continue;
+        }
 
-            input >> attend[i].teacherId;
-            input.ignore();
+        // STUDENT MANAGEMENT
+        if(choice == 1)
+        {
+            int studentChoice;
 
-            input.getline(attend[i].date, 12, ',');
-
-            input.getline(attend[i].status, 8);
-
-            if(input)
+            do
             {
-                attendanceCount++;
+                cout << "\n--- STUDENT MANAGEMENT ---";
+                cout << "\n1. Add Student";
+                cout << "\n2. Update Student";
+                cout << "\n3. Delete Student";
+                cout << "\n4. Back";
+                cout << "\nEnter choice: ";
+                cin >> studentChoice;
+
+                if(studentChoice == 1)
+                {
+                    addStudent(stud, studentCount);
+                }
+                else if(studentChoice == 2)
+                {
+                    updateStudent(stud, studentCount);
+                }
+                else if(studentChoice == 3)
+                {
+                    deleteStudent(stud, studentCount);
+                }
+                else if(studentChoice == 4)
+                {
+                    cout << "\nReturning to Main Menu...";
+                }
+                else
+                {
+                    cout << "\nInvalid choice!";
+                }
+
+            } while(studentChoice != 4);
+        }
+
+        // TEACHER MANAGEMENT
+        else if(choice == 2)
+        {
+            int teacherChoice;
+
+            do
+            {
+                cout << "\n--- TEACHER MANAGEMENT ---";
+                cout << "\n1. Add Teacher";
+                cout << "\n2. Update Teacher";
+                cout << "\n3. Delete Teacher";
+                cout << "\n4. View Teachers";
+                cout << "\n5. Back";
+                cout << "\nEnter choice: ";
+                cin >> teacherChoice;
+
+                if(teacherChoice == 1)
+                {
+                    addTeacher(teach, teacherCount);
+                }
+                else if(teacherChoice == 2)
+                {
+                    updateTeacher(teach, teacherCount);
+                }
+                else if(teacherChoice == 3)
+                {
+                    deleteTeacher(teach, teacherCount);
+                }
+                else if(teacherChoice == 4)
+                {
+                    viewTeachers(teach, teacherCount);
+                }
+                else if(teacherChoice == 5)
+                {
+                    cout << "\nReturning to Main Menu...";
+                }
+                else
+                {
+                    cout << "\nInvalid choice!";
+                }
+
+            } while(teacherChoice != 5);
+        }
+
+        // SEARCH STUDENT
+        else if(choice == 3)
+        {
+            int id;
+
+            cout << "\nEnter Student ID: ";
+            cin >> id;
+
+            Student *result = findStudentById(stud, studentCount, id);
+
+            if(result != NULL)
+            {
+                cout << "\nStudent Found!";
+                cout << "\nID: " << result->studentId;
+                cout << "\nName: " << result->name;
+                cout << "\nAge: " << result->age;
+                cout << "\nGender: " << result->gender;
+                cout << "\nContact: " << result->contact;
+            }
+            else
+            {
+                cout << "\nStudent Not Found!";
             }
         }
 
-        input.close();
-    }
-
-
-    // MARKS FILE READING
-
-    input.open("marks.txt");
-
-    if(input)
-    {
-        for(int i = 0; i < 100 && input >> marks[i].studentId; i++)
+        // SEARCH TEACHER
+        else if(choice == 4)
         {
-            input.ignore();
+            int id;
 
-            input.getline(marks[i].subject, 10, ',');
+            cout << "\nEnter Teacher ID: ";
+            cin >> id;
 
-            input.getline(marks[i].component, 12, ',');
+            Teacher *result = findTeacherById(teach, teacherCount, id);
 
-            input >> marks[i].marks;
-
-            if(input)
+            if(result != NULL)
             {
-                marksCount++;
+                cout << "\nTeacher Found!";
+                cout << "\nID: " << result->teacherId;
+                cout << "\nName: " << result->name;
+                cout << "\nDepartment: " << result->department;
+                cout << "\nExperience: " << result->experience;
+                cout << "\nCourse: " << result->course;
+            }
+            else
+            {
+                cout << "\nTeacher Not Found!";
             }
         }
 
-        input.close();
-    }
+        // EXIT
+        else if(choice == 5)
+        {
+            cout << "\nThank you for using UMS!";
+        }
+        else
+        {
+            cout << "\nInvalid choice!";
+        }
 
-
-    // DISPLAY STUDENT RECORDS
-
-    cout << "\n----- STUDENT RECORDS -----\n";
-
-    for(int i = 0; i < studentCount; i++)
-    {
-        cout << stud[i].studentId << " "
-             << stud[i].name << " "
-             << stud[i].age << " "
-             << stud[i].gender << " "
-             << stud[i].contact << endl;
-    }
-
-
-    // DISPLAY TEACHER RECORDS
-
-    cout << "\n----- TEACHER RECORDS -----\n";
-
-    for(int i = 0; i < teacherCount; i++)
-    {
-        cout << teach[i].teacherId << " "
-             << teach[i].name << " "
-             << teach[i].department << " "
-             << teach[i].experience << " "
-             << teach[i].course << endl;
-    }
-
-
-    // DISPLAY ATTENDANCE RECORDS
-
-    cout << "\n----- ATTENDANCE RECORDS -----\n";
-
-    for(int i = 0; i < attendanceCount; i++)
-    {
-        cout << attend[i].studentId << " "
-             << attend[i].teacherId << " "
-             << attend[i].date << " "
-             << attend[i].status << endl;
-    }
-
-
-    // DISPLAY MARKS RECORDS
-
-    cout << "\n----- MARKS RECORDS -----\n";
-
-    for(int i = 0; i < marksCount; i++)
-    {
-        cout << marks[i].studentId << " "
-             << marks[i].subject << " "
-             << marks[i].component << " "
-             << marks[i].marks << endl;
-    }
-
-  int searchId;
-
-cout << "\nEnter Student ID to search: ";
-cin >> searchId;
-
-Student *found = findStudentById(stud, studentCount, searchId);
-
-if(found != NULL)
-{
-    cout << "\nStudent Found!" << endl;
-    cout << "ID: " << found->studentId << endl;
-    cout << "Name: " << found->name << endl;
-    cout << "Age: " << found->age << endl;
-    cout << "Gender: " << found->gender << endl;
-    cout << "Contact: " << found->contact << endl;
-}
-else
-{
-    cout << "\nStudent Not Found!" << endl;
-}
-    // RELEASE MEMORY
+    } while(choice != 5);
 
     delete[] stud;
     delete[] teach;
-    delete[] attend;
-    delete[] marks;
 
     return 0;
 }
