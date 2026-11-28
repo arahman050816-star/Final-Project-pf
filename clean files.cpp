@@ -261,3 +261,173 @@ void cleanMarks()
     cout << "\nValid Records: " << valid;
     cout << "\nInvalid Records: " << invalid << endl;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void addTeacher(Teacher *&teach, int &count)
+{
+    Teacher t;
+
+    cout << "\nEnter Teacher ID: ";
+    cin >> t.teacherId;
+    for(int i = 0; i < count; i++)
+    {
+        if(teach[i].teacherId == t.teacherId)
+        {
+            cout << "\nTeacher ID already exists!\n";
+            return;
+        }
+    }
+
+    cin.ignore(1000, '\n');
+
+    cout << "Enter Name: ";
+    cin.getline(t.name, 40);
+
+    cout << "Enter Department: ";
+    cin.getline(t.department, 30);
+
+    cout << "Enter Experience: ";
+    cin >> t.experience;
+
+    cin.ignore(1000, '\n');
+
+    cout << "Enter Course: ";
+    cin.getline(t.course, 30);
+    Teacher *temp = new Teacher[count + 1];
+
+    for(int i = 0; i < count; i++)
+    {
+        temp[i] = teach[i];
+    }
+
+    temp[count] = t;
+
+    delete[] teach;
+
+    teach = temp;
+    count++;
+
+    saveTeachers(teach, count);
+
+    cout << "\nTeacher added successfully!\n";
+}
+void updateTeacher(Teacher *teach, int count)
+{
+    int id;
+    int position = -1;
+
+    cout << "\nEnter Teacher ID to update: ";
+    cin >> id;
+    for(int i = 0; i < count; i++)
+    {
+        if(teach[i].teacherId == id)
+        {
+            position = i;
+            break;
+        }
+    }
+
+    if(position == -1)
+    {
+        cout << "\nTeacher not found!\n";
+        return;
+    }
+
+    cin.ignore(1000, '\n');
+
+    cout << "Enter New Name: ";
+    cin.getline(teach[position].name, 40);
+
+    cout << "Enter New Department: ";
+    cin.getline(teach[position].department, 30);
+
+    cout << "Enter New Experience: ";
+    cin >> teach[position].experience;
+
+    cin.ignore(1000, '\n');
+
+    cout << "Enter New Course: ";
+    cin.getline(teach[position].course, 30);
+
+    saveTeachers(teach, count);
+
+    cout << "\nTeacher updated successfully!\n";
+}
+
+void deleteTeacher(Teacher *&teach, int &count)
+{
+    int id;
+    int position = -1;
+
+    cout << "\nEnter Teacher ID to delete: ";
+    cin >> id;
+    for(int i = 0; i < count; i++)
+    {
+        if(teach[i].teacherId == id)
+        {
+            position = i;
+            break;
+        }
+    }
+    if(position == -1)
+    {
+        cout << "\nTeacher not found!\n";
+        return;
+    }
+    Teacher *temp = NULL;
+    if(count > 1)
+    {
+        temp = new Teacher[count - 1];
+
+        int j = 0;
+
+        for(int i = 0; i < count; i++)
+        {
+            if(i != position)
+            {
+                temp[j] = teach[i];
+                j++;
+            }
+        }
+    }
+
+    delete[] teach;
+
+    teach = temp;
+    count--;
+
+    saveTeachers(teach, count);
+
+    cout << "\nTeacher deleted successfully!\n";
+}
+void viewTeachers(Teacher *teach, int count)
+{
+    if (count == 0 || teach == NULL)
+    {
+        cout << "\nNo teachers available!\n";
+        return;
+    }
+
+    cout << "\n========== TEACHERS ==========\n";
+    for (int i = 0; i < count; i++)
+    {
+        cout << "ID: " << teach[i].teacherId
+             << " | Name: " << teach[i].name
+             << " | Dept: " << teach[i].department
+             << " | Exp: " << teach[i].experience
+             << " | Course: " << teach[i].course << "\n";
+    }
+}
+
